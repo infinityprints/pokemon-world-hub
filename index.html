@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pokémon World Hub - News, Stores & Card Shows</title>
   
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5n/N0ZD31g=" crossorigin=""/>
 
@@ -18,11 +17,7 @@
     nav a { color: white; margin: 0 1.5rem; text-decoration: none; font-weight: bold; }
     nav a:hover { color: #a8dadc; }
 
-    .hero { 
-      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
-                  url('https://images.unsplash.com/photo-1637853100969-90a41666a43e?auto=format&fit=crop&q=80&w=1600');
-      background-size: cover; color: white; text-align: center; padding: 5rem 1.5rem; 
-    }
+    .hero { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('https://images.unsplash.com/photo-1637853100969-90a41666a43e?auto=format&fit=crop&q=80&w=1600'); background-size: cover; color: white; text-align: center; padding: 5rem 1.5rem; }
     .hero h1 { font-size: 2.8rem; margin-bottom: 1rem; }
     .hero p { font-size: 1.3rem; max-width: 800px; margin: 0 auto; }
 
@@ -30,20 +25,10 @@
     
     #map-section { min-height: 700px; }
     #search-container { margin: 1.5rem 0; text-align: center; }
-    #search-input { 
-      padding: 1rem 1.5rem; width: 400px; max-width: 90%; font-size: 1.1rem; 
-      border: 2px solid #e63946; border-radius: 10px; 
-    }
+    #search-input { padding: 1rem 1.5rem; width: 400px; max-width: 90%; font-size: 1.1rem; border: 2px solid #e63946; border-radius: 10px; }
     #search-input:focus { outline: none; border-color: #1d3557; box-shadow: 0 0 8px rgba(29,53,87,0.4); }
 
-    #map-wrapper { 
-      height: 650px; 
-      width: 100%; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-      overflow: hidden; 
-      background: #e0f0ff;  /* lichte blauwe fallback tijdens load */
-    }
+    #map-wrapper { height: 650px; width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow: hidden; background: #e0f0ff; }
     #map { height: 100%; width: 100%; }
 
     .section { margin: 3rem 0; }
@@ -76,7 +61,7 @@
     <section class="section" id="map-section">
       <div class="info-box">
         <h2>Global Map – Pokémon Stores & Card Shows</h2>
-        <p>Type below (e.g. "infinityprints-tcg", "tokyo", "london") and press Enter to zoom & open info.</p>
+        <p>Type below (e.g. "infinityprints-tcg", "tokyo") and press Enter. If map glitches, try hard refresh (Ctrl+F5) on the live URL.</p>
       </div>
 
       <div id="search-container">
@@ -106,20 +91,18 @@
     <p>© 2026 Pokémon World Hub – Fan project, not official</p>
   </footer>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
-    // Wacht tot alles geladen is
     window.addEventListener('load', function() {
-      const mapContainer = document.getElementById('map');
-      if (!mapContainer) {
-        console.error('Map container niet gevonden!');
+      console.log("Pagina volledig geladen – start map init");
+      const mapEl = document.getElementById('map');
+      if (!mapEl) {
+        console.error("Map div niet gevonden!");
         return;
       }
 
-      // Maak de map
       var map = L.map('map', {
         center: [20, 0],
         zoom: 2,
@@ -129,83 +112,78 @@
         zoomControl: true
       });
 
-      // OpenStreetMap tiles (geen wrap)
+      // Probeer OSM eerst, fallback naar Stamen als tiles niet laden
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
         noWrap: true
       }).addTo(map);
 
-      // Locaties inclusief Infinity Prints TCG
+      // Locaties
       const locations = [
-        { 
-          name: "Infinity Prints TCG", 
-          lat: 62.2415, 
-          lng: 25.7209, 
-          type: "Pokémon TCG Store", 
-          info: "Physical store in Jyväskylä, Finland<br>Address: Yliopistonkatu 44 lh. 3, 40100 Jyväskylä<br>Open: Tue-Fri 11-19, Sat 11-17<br>TCG playing every Saturday<br>Tournaments every other Friday (€5 fee, league points)<br>Singles, sealed products<br>Website: <a href='https://www.infinityprints-tcg.com' target='_blank'>infinityprints-tcg.com</a><br>Phone: 045 1964112"
-        },
-        { name: "Pokémon Center Tokyo", lat: 35.6762, lng: 139.6503, type: "Official Center", info: "Flagship store with exclusive merch" },
-        { name: "Spellenhuis Amsterdam", lat: 52.3702, lng: 4.8952, type: "Store", info: "Large Pokémon & TCG spot with events" },
-        { name: "Pokémon NYC", lat: 40.7128, lng: -74.0060, type: "Store", info: "TCG boosters & events" },
-        { name: "London Card Show", lat: 51.5074, lng: -0.1278, type: "Event", info: "Monthly trading event" }
+        { name: "Infinity Prints TCG", lat: 62.2415, lng: 25.7209, type: "Pokémon TCG Store", info: "Jyväskylä, Finland<br>Address: Yliopistonkatu 44 lh. 3, 40100<br>Website: <a href='https://www.infinityprints-tcg.com' target='_blank'>infinityprints-tcg.com</a>" },
+        { name: "Pokémon Center Tokyo", lat: 35.6762, lng: 139.6503, type: "Official Center", info: "Flagship store" },
+        { name: "Spellenhuis Amsterdam", lat: 52.3702, lng: 4.8952, type: "Store", info: "Large TCG spot" }
       ];
 
       const markers = {};
 
       locations.forEach(loc => {
-        const marker = L.marker([loc.lat, loc.lng])
-          .addTo(map)
+        const marker = L.marker([loc.lat, loc.lng]).addTo(map)
           .bindPopup(`<b>${loc.name}</b><br><i>${loc.type}</i><br><br>${loc.info}`)
           .bindTooltip(loc.name, { direction: 'top' });
-
         markers[loc.name.toLowerCase()] = { marker, lat: loc.lat, lng: loc.lng };
       });
 
-      // Zoekfunctie
+      // Zoekfunctie met logs
       const searchInput = document.getElementById('search-input');
       searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           const query = searchInput.value.trim().toLowerCase();
+          console.log("Zoekopdracht: " + query);
           if (!query) return;
 
           let found = false;
           for (const key in markers) {
             if (key.includes(query) || key.replace(/-/g, '').includes(query.replace(/-/g, ''))) {
               const { marker, lat, lng } = markers[key];
-              map.setView([lat, lng], 13); // Zoom naar ~stad/straat niveau
+              map.setView([lat, lng], 13);
               marker.openPopup();
+              console.log("Gevonden en gezoomd naar: " + key);
               found = true;
               break;
             }
           }
 
           if (!found) {
-            alert("Geen match gevonden voor '" + query + "'. Probeer 'infinityprints-tcg', 'infinity', 'tokyo', 'amsterdam' of 'london'.");
+            alert("Geen match voor '" + query + "'. Probeer 'infinityprints-tcg' of 'tokyo'.");
+            console.log("Geen match gevonden");
           }
-
-          searchInput.blur(); // Verberg toetsenbord op mobiel
+          searchInput.blur();
         }
       });
 
-      // Forceer map refresh meerdere keren (belangrijk op GitHub Pages!)
+      // Super agressieve fix voor size
       function fixMapSize() {
-        if (map) map.invalidateSize(true);
+        if (map) {
+          map.invalidateSize(true);
+          console.log("invalidateSize aangeroepen");
+        }
       }
 
-      // Meerdere timeouts – lost bijna altijd de grijze/blauwe blokken op
-      setTimeout(fixMapSize, 300);
-      setTimeout(fixMapSize, 800);
+      setTimeout(fixMapSize, 500);
       setTimeout(fixMapSize, 1500);
       setTimeout(fixMapSize, 3000);
-      setTimeout(fixMapSize, 5000);
+      setTimeout(fixMapSize, 6000);
+
+      // Interval voor eerste 30 sec (helpt op trage loads)
+      const interval = setInterval(fixMapSize, 2000);
+      setTimeout(() => clearInterval(interval), 30000);
 
       window.addEventListener('resize', fixMapSize);
 
-      // Dynamisch observeren (als browser het ondersteunt)
       if (window.ResizeObserver) {
-        const observer = new ResizeObserver(fixMapSize);
-        observer.observe(document.getElementById('map-wrapper'));
+        new ResizeObserver(fixMapSize).observe(document.getElementById('map-wrapper'));
       }
     });
   </script>
