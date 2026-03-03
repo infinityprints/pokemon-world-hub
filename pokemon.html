@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon World Hub - News, Stores & Card Shows</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5n/N0ZD31g=" crossorigin=""/>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height: 100%; font-family: Arial, sans-serif; background:#f0f4f8; color:#333; }
+    
+    header { background: #e63946; color: white; padding: 1.5rem; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.25); }
+    nav { background: #1d3557; padding: 1rem; text-align: center; }
+    nav a { color: white; margin: 0 1.5rem; text-decoration: none; font-weight: bold; }
+    nav a:hover { color: #a8dadc; }
+
+    .hero { background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('https://images.unsplash.com/photo-1637853100969-90a41666a43e?auto=format&fit=crop&q=80&w=1600'); background-size: cover; color: white; text-align: center; padding: 5rem 1.5rem; }
+    .hero h1 { font-size: 2.8rem; margin-bottom: 1rem; }
+    .hero p { font-size: 1.3rem; max-width: 800px; margin: 0 auto; }
+
+    main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+    
+    #map-section { min-height: 700px; }
+    #search-container { margin: 1.5rem 0; text-align: center; }
+    #search-input { padding: 1rem 1.5rem; width: 400px; max-width: 90%; font-size: 1.1rem; border: 2px solid #e63946; border-radius: 10px; }
+    #search-input:focus { outline: none; border-color: #1d3557; box-shadow: 0 0 8px rgba(29,53,87,0.4); }
+
+    #map-wrapper { height: 650px; width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow: hidden; background: #e0f0ff; }
+    #map { height: 100%; width: 100%; }
+
+    .section { margin: 3rem 0; }
+    .info-box { background: white; padding: 1.8rem; border-radius: 12px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+
+    footer { background: #1d3557; color: white; text-align: center; padding: 2rem; margin-top: 3rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Pokémon World Hub</h1>
+    <p>International hub for Pokémon news, stores, card shows & community</p>
+  </header>
+
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Latest News</a>
+    <a href="#map-section">Find Stores & Shows</a>
+    <a href="#">Share Videos</a>
+    <a href="#">Chat</a>
+  </nav>
+
+  <div class="hero">
+    <h1>Find Pokémon Anywhere!</h1>
+    <p>Search stores like Infinity Prints TCG and zoom to details worldwide.</p>
+  </div>
+
+  <main>
+    <section class="section" id="map-section">
+      <div class="info-box">
+        <h2>Global Map – Pokémon Stores & Card Shows</h2>
+        <p>Type below (e.g. "infinityprints-tcg", "tokyo") and press Enter. If map glitches, try hard refresh (Ctrl+F5) on the live URL.</p>
+      </div>
+
+      <div id="search-container">
+        <input type="text" id="search-input" placeholder="Search store e.g. infinityprints-tcg..." />
+      </div>
+      
+      <div id="map-wrapper">
+        <div id="map"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="info-box">
+        <h2>Coming Soon</h2>
+        <ul style="padding-left: 1.8rem; font-size: 1.1rem; line-height: 1.7;">
+          <li>Auto-updating Pokémon news feeds</li>
+          <li>Submit form for new stores/events</li>
+          <li>Community YouTube video gallery</li>
+          <li>Live chat integration</li>
+          <li>Multi-language support</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Pokémon World Hub – Fan project, not official</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script>
+    window.addEventListener('load', function() {
+      console.log("Pagina volledig geladen – start map init");
+      const mapEl = document.getElementById('map');
+      if (!mapEl) {
+        console.error("Map div niet gevonden!");
+        return;
+      }
+
+      var map = L.map('map', {
+        center: [20, 0],
+        zoom: 2,
+        minZoom: 1,
+        maxZoom: 18,
+        worldCopyJump: false,
+        zoomControl: true
+      });
+
+      // Probeer OSM eerst, fallback naar Stamen als tiles niet laden
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+        noWrap: true
+      }).addTo(map);
+
+      // Locaties
+      const locations = [
+        { name: "Infinity Prints TCG", lat: 62.2415, lng: 25.7209, type: "Pokémon TCG Store", info: "Jyväskylä, Finland<br>Address: Yliopistonkatu 44 lh. 3, 40100<br>Website: <a href='https://www.infinityprints-tcg.com' target='_blank'>infinityprints-tcg.com</a>" },
+        { name: "Pokémon Center Tokyo", lat: 35.6762, lng: 139.6503, type: "Official Center", info: "Flagship store" },
+        { name: "Spellenhuis Amsterdam", lat: 52.3702, lng: 4.8952, type: "Store", info: "Large TCG spot" }
+      ];
+
+      const markers = {};
+
+      locations.forEach(loc => {
+        const marker = L.marker([loc.lat, loc.lng]).addTo(map)
+          .bindPopup(`<b>${loc.name}</b><br><i>${loc.type}</i><br><br>${loc.info}`)
+          .bindTooltip(loc.name, { direction: 'top' });
+        markers[loc.name.toLowerCase()] = { marker, lat: loc.lat, lng: loc.lng };
+      });
+
+      // Zoekfunctie met logs
+      const searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const query = searchInput.value.trim().toLowerCase();
+          console.log("Zoekopdracht: " + query);
+          if (!query) return;
+
+          let found = false;
+          for (const key in markers) {
+            if (key.includes(query) || key.replace(/-/g, '').includes(query.replace(/-/g, ''))) {
+              const { marker, lat, lng } = markers[key];
+              map.setView([lat, lng], 13);
+              marker.openPopup();
+              console.log("Gevonden en gezoomd naar: " + key);
+              found = true;
+              break;
+            }
+          }
+
+          if (!found) {
+            alert("Geen match voor '" + query + "'. Probeer 'infinityprints-tcg' of 'tokyo'.");
+            console.log("Geen match gevonden");
+          }
+          searchInput.blur();
+        }
+      });
+
+      // Super agressieve fix voor size
+      function fixMapSize() {
+        if (map) {
+          map.invalidateSize(true);
+          console.log("invalidateSize aangeroepen");
+        }
+      }
+
+      setTimeout(fixMapSize, 500);
+      setTimeout(fixMapSize, 1500);
+      setTimeout(fixMapSize, 3000);
+      setTimeout(fixMapSize, 6000);
+
+      // Interval voor eerste 30 sec (helpt op trage loads)
+      const interval = setInterval(fixMapSize, 2000);
+      setTimeout(() => clearInterval(interval), 30000);
+
+      window.addEventListener('resize', fixMapSize);
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(fixMapSize).observe(document.getElementById('map-wrapper'));
+      }
+    });
+  </script>
+
+</body>
+</html>
